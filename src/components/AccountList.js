@@ -5,7 +5,7 @@ import AccountService from "../service/AccountService";
 // import AccountService from "../service/AccountService";
 
 function AccountList() {
-    const [acct, setAcct] = useState([])
+    var [acct, setAcct] = useState([])
     const navigate = useNavigate()
 
     // useEffect(() => {
@@ -45,11 +45,40 @@ function AccountList() {
         })
     }
 
+    const searchHandler = (value) =>{
+        // var Result = acct.filter((user)=>{
+        //     return(
+                
+        //         user &&
+        //         (user.name || user.lastname) &&
+        //         (user.name.toLowerCase().includes(value) || user.lastname.toLowerCase().includes(value))
+                
+        //     );
+            
+        // });
+        // console.log(Result)
+        // setAcct(Result)
+        fetch(`http://localhost:3030/fetch`).then(r => r.json())
+        .then((json) => {
+            const Result = json.filter((user)=>{
+                return user && 
+                (user.name || user.lastname) && 
+                (user.name.toLowerCase().includes(value) || user.lastname.toLowerCase().includes(value));
+            })
+            setAcct(Result);
+            console.log(Result);
+        })
+
+
+
+    }
+
     return (
 
         <div>
             <h2 className="text-center">Bank Accounts</h2>
             <br/>
+            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" onChange={e => searchHandler(e.target.value)}></input>
             <Link to={"/add-acct"} className="btn btn-primary">Add Acccount</Link>
             <br/>
             <div className="row">
