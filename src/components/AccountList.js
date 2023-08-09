@@ -1,40 +1,44 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import AccountService from "../service/AccountService";
-// import AccountService from "../service/AccountService";
+import { isLoggedin } from "../service/AuthService";
+import HeaderComponenet from "./HeaderComponenet";
+import { toast } from "react-toastify";
 
 function AccountList() {
     var [acct, setAcct] = useState([])
-    const navigate = useNavigate()
 
-    // useEffect(() => {
-    //     getAcct();
-    // },[])
 
-    // const getAcct = () =>{
-    //     AccountService.getAccount().then((r) => {
-    //         setAcct(r.data)
-    //         console.log(r.data)
-    //     });
-    // };
 
     useEffect(() => {
-        axios.get(`http://localhost:3030/fetch`)
+        axios.get(`http://localhost:3030/bank/fetch`,{
+            headers:{
+                Authorization:"Bearer "+ JSON.parse(localStorage.getItem('Token')),
+                "Content-Type":'application/json'      
+            }
+        })
             .then(r => {
                 console.log(r)
                 setAcct(r.data)
+                
             })
             .catch(e => {
                 console.log(e)
+                
             })
     }, [])
 
     const deleteAcct = (acctNo) => {
         AccountService.deleteAccount(acctNo).then(r => {
-            axios.get(`http://localhost:3030/fetch`)
+            axios.get(`http://localhost:3030/bank/fetch`,{
+                headers:{
+                    Authorization:"Bearer " + JSON.parse(localStorage.getItem('Token'))
+                }
+            })
                 .then(r => {
                     console.log(r)
+                    toast.success('account deleted')
                     setAcct(r.data)
                 })
                 .catch(e => {
@@ -46,19 +50,12 @@ function AccountList() {
     }
 
     const searchHandler = (value) =>{
-        // var Result = acct.filter((user)=>{
-        //     return(
-                
-        //         user &&
-        //         (user.name || user.lastname) &&
-        //         (user.name.toLowerCase().includes(value) || user.lastname.toLowerCase().includes(value))
-                
-        //     );
-            
-        // });
-        // console.log(Result)
-        // setAcct(Result)
-        fetch(`http://localhost:3030/fetch`).then(r => r.json())
+        
+        fetch(`http://localhost:3030/bank/fetch`,{
+            headers:{
+                Authorization:"Bearer "+JSON.parse(localStorage.getItem('Token'))
+            }
+        }).then(r => r.json())
         .then((json) => {
             const Result = json.filter((user)=>{
                 return user && 
@@ -66,19 +63,24 @@ function AccountList() {
                 (user.name.toLowerCase().includes(value) || user.lastname.toLowerCase().includes(value));
             })
             setAcct(Result);
-            console.log(Result);
         })
 
-
-
     }
+    
 
     return (
 
-        <div>
+
+        isLoggedin() ?
+        
+        <div> 
+            <HeaderComponenet search={searchHandler} />
             <h2 className="text-center">Bank Accounts</h2>
             <br/>
-            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" onChange={e => searchHandler(e.target.value)}></input>
+            {/* <form className="d-flex" role="search">
+        <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" onChange={e => searchHandler(e.target.value)} />
+        <button className="btn btn-outline-success" type="submit">Search</button>
+      </form> */}
             <Link to={"/add-acct"} className="btn btn-primary">Add Acccount</Link>
             <br/>
             <div className="row">
@@ -116,7 +118,9 @@ function AccountList() {
                 </table>
             </div>
 
-        </div>
+        </div> :
+
+        <Navigate to={'/'} />
     )
 }
 

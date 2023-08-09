@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import AccountService from "../service/AccountService";
+import { isLoggedin } from "../service/AuthService";
+import { toast } from "react-toastify";
 // import Validation from "./Validation";
 
 function AddAcct() {
@@ -78,14 +80,15 @@ function AddAcct() {
         const account = { accountNo, name, lastname, email, phone }
 
         if(accountNo ==='' || name === '' || lastname === '' || email === '' || phone===''){
-            alert("please fill all fields!")
+            toast.warning('please fill all fields!')
         }
 
 
         if (id) {
 
             AccountService.updateAccount(id, account).then(r => {
-                history('/')
+                toast.success(`Account update with name ${account.name}`)
+                history('/home')
 
             }).catch(e => {
                 console.log(e)
@@ -94,7 +97,8 @@ function AddAcct() {
         } else {
             AccountService.createAccount(account).then(r => {
                 console.log(r.data)
-                history('/')
+                toast.success(`Account created with name ${account.name}`)
+                history('/home')
 
             }).catch(err => {
                 console.log(err)
@@ -118,6 +122,9 @@ function AddAcct() {
     }, [id])
 
     return (
+        
+        isLoggedin() ?
+
         <div>
             <div>
                 <form>
@@ -151,7 +158,9 @@ function AddAcct() {
                 </form>
             </div>
 
-        </div>
+        </div> :
+
+        <Navigate to={'/'} />
     )
 }
 
